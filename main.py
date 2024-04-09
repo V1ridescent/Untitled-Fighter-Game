@@ -1,48 +1,68 @@
+# Import necessary libraries
 import pygame
 import pygame.font
 import sys
 import os
 import time
 
-#Init
+# Initialize pygame
 pygame.init()
+
+# Set up the clock
 clock = pygame.time.Clock()
+
+# Screen dimensions
 screen_width = 1456
 screen_height = 816
+
+# Create the display window
 screen = pygame.display.set_mode((screen_width, screen_height))
+
+# Load background image
 background_image = pygame.image.load('scene/background.png')
 ground = pygame.image.load('scene/ground.png')
+
+# Scale factor for background
 scale_factor = 0.7
 scaled_background = pygame.transform.scale(background_image, (int(background_image.get_width() * scale_factor), int(background_image.get_height() * scale_factor)))
+
+# Set the window caption
 pygame.display.set_caption('Fighter Game - Justin Jaques')
+
+# Load main menu and about images
 main_menu_image = pygame.image.load('mainmenu/mainmenubackground.png')
 about_image = pygame.image.load('mainmenu/about.png')
 
-#Win Screens
+# Load win screens
 player1_win_screen = pygame.image.load('win/player1_win.png')
 player2_win_screen = pygame.image.load('win/player2_win.png')
 
-#Getting Font
+# Path to main font
 font_path = os.path.abspath('font/mainfont.TTF')
+
+# Font size
 font_size = 30
+
+# Load main font
 main_font = pygame.font.Font(font_path, font_size)
+
+# Texts
 beta_text = 'Untitled Fighter Game Early Alpha' 
 name_text = 'Developed by Justin Jaques'
 text_render = main_font.render(beta_text, True, (255, 255, 255))
 text1_render = main_font.render(name_text, True, (255, 255, 255))
 
-
-#Player texture scaling
+# Player texture scaling
 player_texture_scale_width = 150
 player_texture_scale_height = 150
 
 player2_texture_scale_width = 150
 player2_texture_scale_height = 150
 
-#Button surface
+# Button surface
 button_surface = pygame.Surface((1456, 816))
 
-#State system
+# State system
 state = [
     'Main Menu',
     'Game',
@@ -55,7 +75,7 @@ state = [
 currentState = state[0]
 
 
-#Player 1 Class
+# Player 1 Class
 class Player:
     def __init__(self, x, y):
         self.x = x
@@ -63,10 +83,10 @@ class Player:
         self.xVel = 0
         self.speed = 5
         self.is_attacking = False
-        self.health = 100;
+        self.health = 100
         self.attack_cooldown = 0  # Initial cooldown timer
         self.attack_delay = 500  # Cooldown duration in milliseconds
-        self.isIdle = True;
+        self.isIdle = True
         self.animation_timer = 0  # Timer for idle animation
         self.animation_duration = 100  # Duration between idle animation frames
         self.attack_animation_duration = 50
@@ -79,28 +99,18 @@ class Player:
         self.canAttack = True
         self.hitbox_surface = pygame.Surface((50, 100))  # Create a surface for hitbox
         self.idle_animation_frames = [
-            pygame.transform.scale(pygame.image.load('player1_animation/idle0.png'), (player_texture_scale_width, player_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player1_animation/idle1.png'), (player_texture_scale_width, player_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player1_animation/idle2.png'), (player_texture_scale_width, player_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player1_animation/idle3.png'), (player_texture_scale_width, player_texture_scale_height))
+            pygame.transform.scale(pygame.image.load(f'player1_animation/idle{i}.png'), (player_texture_scale_width, player_texture_scale_height))
+            for i in range(4)
         ]
 
         self.running_animation_frames = [
-            pygame.transform.scale(pygame.image.load('player1_animation/run0.png'), (player_texture_scale_width, player_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player1_animation/run1.png'), (player_texture_scale_width, player_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player1_animation/run2.png'), (player_texture_scale_width, player_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player1_animation/run3.png'), (player_texture_scale_width, player_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player1_animation/run4.png'), (player_texture_scale_width, player_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player1_animation/run5.png'), (player_texture_scale_width, player_texture_scale_height))
+            pygame.transform.scale(pygame.image.load(f'player1_animation/run{i}.png'), (player_texture_scale_width, player_texture_scale_height))
+            for i in range(6)
         ]
 
         self.attacking_animation_frames = [
-            pygame.transform.scale(pygame.image.load('player1_animation/attack0.png'), (player_texture_scale_width, player_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player1_animation/attack1.png'), (player_texture_scale_width, player_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player1_animation/attack2.png'), (player_texture_scale_width, player_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player1_animation/attack3.png'), (player_texture_scale_width, player_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player1_animation/attack4.png'), (player_texture_scale_width, player_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player1_animation/attack5.png'), (player_texture_scale_width, player_texture_scale_height))
+            pygame.transform.scale(pygame.image.load(f'player1_animation/attack{i}.png'), (player_texture_scale_width, player_texture_scale_height))
+            for i in range(6)
         ]
 
    
@@ -112,7 +122,6 @@ class Player:
         else:
             self.is_attacking = False
           
-        
 
     def update(self, events):
         self.attack_cooldown -= clock.get_time()  # Decrement cooldown timer
@@ -193,15 +202,19 @@ class Player:
                 
 
     def draw_health_bar(self, surface):
-        # Draw the outline of the health bar
-        pygame.draw.rect(surface, (255, 0, 0), (self.x - 25, self.y - 25, 100, 10))
+        # Draw the outline of the health bar with a slight gradient effect
+        pygame.draw.rect(surface, (100, 100, 100), (self.x - 26, self.y - 26, 102, 12))
+        pygame.draw.rect(surface, (50, 50, 50), (self.x - 25, self.y - 25, 100, 10))
+
         # Calculate the width of the health bar based on the player's health
-        health_width = (self.health / 100) * 100
-        # Draw the health bar
-        pygame.draw.rect(surface, (0, 255, 0), (self.x - 25, self.y - 25, health_width, 10))
+        health_width = int((self.health / 100) * 100)
+
+        # Draw the health bar with a gradient effect
+        health_color = (min(255, 255 - (self.health * 2.5)), max(0, self.health * 2.5), 0)
+        pygame.draw.rect(surface, health_color, (self.x - 25, self.y - 25, health_width, 10))
 
 
-#Player 2 Class
+# Player 2 Class
 class Player2:
     def __init__(self, x, y):
         self.x = x
@@ -209,10 +222,10 @@ class Player2:
         self.xVel = 0
         self.speed = 5
         self.is_attacking = False
-        self.health = 100;
+        self.health = 100
         self.attack_cooldown = 0  # Initial cooldown timer
         self.attack_delay = 500  # Cooldown duration in milliseconds
-        self.isIdle = True;
+        self.isIdle = True
         self.animation_timer = 0  # Timer for idle animation
         self.animation_duration = 100  # Duration between idle animation frames
         self.attack_animation_duration = 50
@@ -224,39 +237,19 @@ class Player2:
         self.isInCooldown = False
         self.canAttack = True
         self.hitbox_surface = pygame.Surface((50, 100))  # Create a surface for hitbox
-        self.idle_animation_frames = [ 
-            pygame.transform.scale(pygame.image.load('player2_animation/idle1.png'), (player2_texture_scale_width, player2_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player2_animation/idle2.png'), (player2_texture_scale_width, player2_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player2_animation/idle3.png'), (player2_texture_scale_width, player2_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player2_animation/idle4.png'), (player2_texture_scale_width, player2_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player2_animation/idle5.png'), (player2_texture_scale_width, player2_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player2_animation/idle6.png'), (player2_texture_scale_width, player2_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player2_animation/idle7.png'), (player2_texture_scale_width, player2_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player2_animation/idle8.png'), (player2_texture_scale_width, player2_texture_scale_height))
+        self.idle_animation_frames = [
+            pygame.transform.scale(pygame.image.load(f'player2_animation/idle{i}.png'), (player2_texture_scale_width, player2_texture_scale_height))
+            for i in range(1, 9)
         ]
 
         self.running_animation_frames = [
-            pygame.transform.scale(pygame.image.load('player2_animation/walk1.png'), (player2_texture_scale_width, player2_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player2_animation/walk2.png'), (player2_texture_scale_width, player2_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player2_animation/walk3.png'), (player2_texture_scale_width, player2_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player2_animation/walk4.png'), (player2_texture_scale_width, player2_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player2_animation/walk5.png'), (player2_texture_scale_width, player2_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player2_animation/walk6.png'), (player2_texture_scale_width, player2_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player2_animation/walk7.png'), (player2_texture_scale_width, player2_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player2_animation/walk8.png'), (player2_texture_scale_width, player2_texture_scale_height))
+            pygame.transform.scale(pygame.image.load(f'player2_animation/walk{i}.png'), (player2_texture_scale_width, player2_texture_scale_height))
+            for i in range(1, 9)
         ]
 
         self.attacking_animation_frames = [
-            pygame.transform.scale(pygame.image.load('player2_animation/attack1.png'), (player2_texture_scale_width, player2_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player2_animation/attack2.png'), (player2_texture_scale_width, player2_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player2_animation/attack3.png'), (player2_texture_scale_width, player2_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player2_animation/attack4.png'), (player2_texture_scale_width, player2_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player2_animation/attack5.png'), (player2_texture_scale_width, player2_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player2_animation/attack6.png'), (player2_texture_scale_width, player2_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player2_animation/attack7.png'), (player2_texture_scale_width, player2_texture_scale_height)),
-            pygame.transform.scale(pygame.image.load('player2_animation/attack8.png'), (player2_texture_scale_width, player2_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player2_animation/attack9.png'), (player2_texture_scale_width, player2_texture_scale_height)), 
-            pygame.transform.scale(pygame.image.load('player2_animation/attack10.png'),(player2_texture_scale_width, player2_texture_scale_height))
+            pygame.transform.scale(pygame.image.load(f'player2_animation/attack{i}.png'), (player2_texture_scale_width, player2_texture_scale_height))
+            for i in range(1, 11)
         ]
 
    
@@ -288,7 +281,7 @@ class Player2:
                     self.xVel = self.speed
                     self.isIdle = False
                     self.is_attacking = False
-                    self.isRunningLeft = False  # 
+                    self.isRunningLeft = False
                     self.isRunningRight = True
                 elif event.key == pygame.K_f:  # Start attacking when space key is pressed and not attacking
                     self.is_attacking = True
@@ -345,12 +338,16 @@ class Player2:
                 
                
     def draw_health_bar(self, surface):
-        # Draw the outline of the health bar
-        pygame.draw.rect(surface, (255, 0, 0), (self.x - 25, self.y - 43, 100, 10))
+         # Draw the outline of the health bar with a slight gradient effect
+        pygame.draw.rect(surface, (100, 100, 100), (self.x - 25, self.y - 45, 102, 12))
+        pygame.draw.rect(surface, (50, 50, 50), (self.x - 25, self.y - 45, 100, 10))
+
         # Calculate the width of the health bar based on the player's health
-        health_width = (self.health / 100) * 100
-        # Draw the health bar
-        pygame.draw.rect(surface, (0, 255, 0), (self.x - 25, self.y - 43, health_width, 10))
+        health_width = int((self.health / 100) * 100)
+
+        # Draw the health bar with a gradient effect
+        health_color = (min(255, 255 - (self.health * 2.5)), max(0, self.health * 2.5), 0)
+        pygame.draw.rect(surface, health_color, (self.x - 25, self.y - 45, health_width, 10))
 
 
 def main_menu():
@@ -400,10 +397,6 @@ def about():
 
     pygame.display.update()
 
-
-def game_over():
-    sys.exit(2)
-
 def exit():
     sys.exit(2)
 
@@ -434,14 +427,12 @@ def start():
 
 
 
-
-
 def check_collision(player1, player2):
     if player1.is_attacking and player2.x < player1.x + 150 and player2.x + 50 > player1.x + 50 and player1.y < player2.y + 100 and player1.y + 100 > player2.y:
-        player2.health -= .5  # Deduct health if there's a collision
+        player2.health -= 3  # Deduct health if there's a collision
     # Check for collision between player 2's attack box and player 1's hit box
     if player2.is_attacking and player1.x < player2.x + 100 and player1.x + 50 > player2.x - 100 and player1.y < player2.y + 100 and player1.y + 100 > player2.y:
-        player1.health -= .5
+        player1.health -= 3
 
 
 
@@ -462,7 +453,7 @@ def player2_win():
     currentState = state[0]
    
 
-#Game Loop
+# Game Loop
 while True:
     print(currentState)
     if(currentState == state[1]):
