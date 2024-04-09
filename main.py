@@ -218,7 +218,6 @@ class Player2:
         self.attacking_animation_index = 0
         self.isRunningRight = False
         self.isRunningLeft = False
-        self.isInCooldown = False
         self.canAttack = True
         self.hitbox_surface = pygame.Surface((50, 100))  # Create a surface for hitbox
         self.idle_animation_frames = [ 
@@ -285,9 +284,9 @@ class Player2:
                     self.xVel = self.speed
                     self.isIdle = False
                     self.is_attacking = False
-                    self.isRunningLeft = False  # 
+                    self.isRunningLeft = False  
                     self.isRunningRight = True
-                elif event.key == pygame.K_f:  # Start attacking when space key is pressed and not attacking
+                elif event.key == pygame.K_f:  
                     self.is_attacking = True
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_a:
@@ -410,7 +409,7 @@ def start():
     check_collision(player1, player2)
     screen.blit(scaled_background, (0, 0))
     screen.blit(ground, (0, 750))
-    events = pygame.event.get()  # Move this line inside the loop to update events continuously
+    events = pygame.event.get() 
     screen.blit(text_render, (screen_width // 5.5 - text_render.get_width() // 2, screen_height // 50 - text_render.get_height() // 2))
     screen.blit(text1_render, (screen_width // 5.5 - text_render.get_width() // 2, screen_height // 34 - text_render.get_height() // 900))
     player1.update(events)
