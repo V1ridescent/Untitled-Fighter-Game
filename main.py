@@ -18,6 +18,9 @@ pygame.display.set_caption('Fighter Game - Justin Jaques')
 main_menu_image = pygame.image.load('mainmenu/mainmenubackground.png')
 about_image = pygame.image.load('mainmenu/about.png')
 
+#Win Screens
+player1_win_screen = pygame.image.load('win/player1_win.png')
+player2_win_screen = pygame.image.load('win/player2_win.png')
 
 #Getting Font
 font_path = os.path.abspath('font/mainfont.TTF')
@@ -45,7 +48,8 @@ state = [
     'Game',
     'About',
     'Exit',
-    'Game Over'
+    'Player1 Win',
+    'Player2 Win'
 ]
 
 currentState = state[0]
@@ -105,7 +109,6 @@ class Player:
             # Draw attack hitbox
             attack_box_p1 = pygame.draw.rect(self.hitbox_surface, (255, 0, 0), (self.x + 50, self.y, 100, 50))
             self.isIdle = False  # Player is not idle when attacking
-
         else:
             self.is_attacking = False
           
@@ -218,6 +221,7 @@ class Player2:
         self.attacking_animation_index = 0
         self.isRunningRight = False
         self.isRunningLeft = False
+        self.isInCooldown = False
         self.canAttack = True
         self.hitbox_surface = pygame.Surface((50, 100))  # Create a surface for hitbox
         self.idle_animation_frames = [ 
@@ -284,9 +288,9 @@ class Player2:
                     self.xVel = self.speed
                     self.isIdle = False
                     self.is_attacking = False
-                    self.isRunningLeft = False  
+                    self.isRunningLeft = False  # 
                     self.isRunningRight = True
-                elif event.key == pygame.K_f:  
+                elif event.key == pygame.K_f:  # Start attacking when space key is pressed and not attacking
                     self.is_attacking = True
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_a:
@@ -340,8 +344,6 @@ class Player2:
             screen.blit(current_frame, (self.x - 50, self.y - 48))
                 
                
-
-
     def draw_health_bar(self, surface):
         # Draw the outline of the health bar
         pygame.draw.rect(surface, (255, 0, 0), (self.x - 25, self.y - 43, 100, 10))
@@ -352,6 +354,11 @@ class Player2:
 
 
 def main_menu():
+    pygame.display.update()
+    player1.health = 100
+    player2.health = 100
+    player1.x = 100
+    player2.x = 1325
     global currentState  # Declare currentState as a global variable
     if currentState == state[0]:
         mouse_pos = pygame.mouse.get_pos()
@@ -401,32 +408,59 @@ def exit():
     sys.exit(2)
 
 player1 = Player(100, 650)
-player2 = Player2(300, 650)
+player2 = Player2(1325, 650)
 
 def start():
+    global currentState
+    pygame.display.update()
     clock.tick(200)
     screen.fill((0, 0, 0))  # Fill the screen with black color
     check_collision(player1, player2)
     screen.blit(scaled_background, (0, 0))
     screen.blit(ground, (0, 750))
-    events = pygame.event.get() 
+    events = pygame.event.get()  # Move this line inside the loop to update events continuously
     screen.blit(text_render, (screen_width // 5.5 - text_render.get_width() // 2, screen_height // 50 - text_render.get_height() // 2))
     screen.blit(text1_render, (screen_width // 5.5 - text_render.get_width() // 2, screen_height // 34 - text_render.get_height() // 900))
     player1.update(events)
     player2.update(events)
+
+    if player2.health <= 0:
+        print("Player 1 wins")
+        currentState = state[4]
+    if player1.health <= 0:
+        currentState = state[5]
+
     pygame.display.update()
+
+
 
 
 
 def check_collision(player1, player2):
     if player1.is_attacking and player2.x < player1.x + 150 and player2.x + 50 > player1.x + 50 and player1.y < player2.y + 100 and player1.y + 100 > player2.y:
         player2.health -= .5  # Deduct health if there's a collision
-
     # Check for collision between player 2's attack box and player 1's hit box
     if player2.is_attacking and player1.x < player2.x + 100 and player1.x + 50 > player2.x - 100 and player1.y < player2.y + 100 and player1.y + 100 > player2.y:
         player1.health -= .5
 
 
+
+def player1_win():
+    global currentState
+    screen.blit(player1_win_screen, (0, 0))
+    pygame.display.update()
+    time.sleep(4)
+    
+    currentState = state[0]
+    
+
+def player2_win():
+    global currentState
+    screen.blit(player2_win_screen, (0,0))
+    pygame.display.update()
+    time.sleep(4)
+    currentState = state[0]
+   
 
 #Game Loop
 while True:
@@ -439,3 +473,7 @@ while True:
         about()
     if(currentState == state[3]):
         exit()
+    if(currentState == state[4]):
+        player1_win()
+    if(currentState == state[5]):
+        player2_win()
